@@ -5,13 +5,11 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class PermissionUserTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
     public function test_it_should_be_able_to_give_permission_to_an_user(): void
     {
         $user = User::factory()->create();
@@ -20,5 +18,20 @@ class PermissionUserTest extends TestCase
 
         $this->assertTrue($user->hasPermissionTo('edit-products'));
         $this->assertDatabaseHas('permissions', ['permission' => 'edit-products']);
+    }
+
+    public function test_it_should_allow_access_based_on_permission()
+    {
+        Route::middleware('permission:edit-products')->get('foo', function () {
+            return 'lorem';
+        });
+
+        $user = User::factory()->createOne();
+
+        $this->actingAs($user)->get('foo')->assertForbidden();
+
+        $user->givePermissionTo('edit-products');
+        
+        $this->actingAs($user)->get('foo')->assertSuccessful();
     }
 }
