@@ -24,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Permission::observe(PermissionObserver::class);
-        Gate::before(fn (User $user, $ability) => $user->hasPermissionTo($ability));
+        Gate::before(function (User $user, $ability) {
+            if (Permission::existsOnCache($ability)) {
+                return $user->hasPermissionTo($ability);
+            }
+        });
     }
 }
