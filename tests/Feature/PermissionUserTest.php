@@ -4,8 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Permission;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -39,10 +38,20 @@ class PermissionUserTest extends TestCase
 
     public function test_user_permissions_should_be_cached()
     {
-        Permission::query()->insert(['permission' => 'edit-products'], ['permission' => 'create-products']);
+        Cache::flush();
+
+        Permission::query()->create([
+            'permission' => 'permission-test',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
+        ]);
 
         $cachedPermissions = Cache::get('permissions');
 
-        $this->assertCount(1, $cachedPermissions);
+        $cachedTest = $cachedPermissions->firstWhere('permission', 'permission-test');
+   
+        $this->assertNotNull($cachedTest);
+
+        Permission::where('permission', 'permission-test')->delete();
     }
 }
