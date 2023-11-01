@@ -2,9 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Permission;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
@@ -31,7 +33,16 @@ class PermissionUserTest extends TestCase
         $this->actingAs($user)->get('foo')->assertForbidden();
 
         $user->givePermissionTo('edit-products');
-        
+
         $this->actingAs($user)->get('foo')->assertSuccessful();
+    }
+
+    public function test_user_permissions_should_be_cached()
+    {
+        Permission::query()->insert(['permission' => 'edit-products'], ['permission' => 'create-products']);
+
+        $cachedPermissions = Cache::get('permissions');
+
+        $this->assertCount(1, $cachedPermissions);
     }
 }
