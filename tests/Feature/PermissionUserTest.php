@@ -49,7 +49,7 @@ class PermissionUserTest extends TestCase
         $cachedPermissions = Cache::get('permissions');
 
         $cachedTest = $cachedPermissions->firstWhere('permission', 'permission-test');
-   
+
         $this->assertNotNull($cachedTest);
 
         Permission::where('permission', 'permission-test')->delete();
